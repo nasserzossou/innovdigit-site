@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}INNOV-DIGIT - Développement logiciel & Services IT{% endblock %}
+
+{% block content %}
+<!-- ===== MENU DE NAVIGATION ===== -->
+
+<!-- ===== SECTION HÉRO ===== -->
+<section class="hero-section">
+<div class="container">
+<h1>Bienvenue chez INNOV-DIGIT</h1>
+<p>Développement logiciel sur mesure &amp; Services IT professionnels au Niger</p>
+<a class="btn-accent" href="#activites">Découvrir nos services</a>
+</div>
+</section>
+<!-- ===== SECTION ACTIVITÉS ===== -->
+<section class="section-padding" id="activites">
+<div class="container">
+<h2 class="titre-section au-scroll">Nos activités</h2>
+<div class="grille-services">
+<div class="carte-service au-scroll">
+<i class="bi bi-code-slash icone-service"></i>
+<h4>Développement logiciel</h4>
+<p>Applications web, mobiles et de gestion sur mesure, adaptées aux besoins réels des entreprises et institutions locales.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-hdd-network icone-service"></i>
+<h4>Services IT</h4>
+<p>Installation, maintenance, gestion de parc informatique et conseil technique pour accompagner votre activité au quotidien.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-shield-lock icone-service"></i>
+<h4>Cybersécurité</h4>
+<p>Sensibilisation et bonnes pratiques de sécurité informatique pour protéger votre activité.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-easel icone-service"></i>
+<h4>Formations &amp; Conseil</h4>
+<p>Formations aux outils numériques et accompagnement en transformation digitale.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-palette icone-service"></i>
+<h4>Conception</h4>
+<p>Logos, chartes graphiques et supports de communication pour renforcer votre image de marque.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-megaphone icone-service"></i>
+<h4>Communication</h4>
+<p>Gestion de réseaux sociaux, création de contenu et stratégie de communication digitale.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-laptop icone-service"></i>
+<h4>Vente de matériel</h4>
+<p>Matériel informatique et électronique de qualité, avec conseil personnalisé.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== SECTION POURQUOI NOUS CHOISIR ===== -->
+<section class="section-padding section-fond-clair">
+<div class="container">
+<h2 class="titre-section au-scroll">Pourquoi nous choisir</h2>
+<div class="grille-services">
+<div class="carte-service au-scroll">
+<i class="bi bi-geo-alt icone-service"></i>
+<h4>Expertise locale</h4>
+<p>Des solutions pensées pour les réalités du Niger.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-gear icone-service"></i>
+<h4>Sur mesure</h4>
+<p>Chaque solution est adaptée à vos besoins spécifiques.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-headset icone-service"></i>
+<h4>Accompagnement</h4>
+<p>Un suivi et un support technique réactifs.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== PARTENAIRES & FOURNISSEURS ===== -->
+<section class="section-partenaires">
+<div class="container">
+<h2 class="titre-section au-scroll">Nos partenaires &amp; fournisseurs</h2>
+<div class="slider-partenaires-conteneur">
+<div class="slider-partenaires-piste">
+{% for partenaire in partenaires %}
+<img alt="{{ partenaire.nom }}" src="{{ partenaire.logo.url }}"/>
+{% empty %}
+<p style="color:#888;">Aucun partenaire à afficher pour le moment.</p>
+{% endfor %}
+</div>
+</div>
+</div>
+</section>
+<!-- ===== BANDEAU CONFIER UN PROJET ===== -->
+<section class="section-padding cta-section">
+<div class="container au-scroll">
+<h2 class="titre-section">Une entreprise à digitaliser ?</h2>
+<p style="margin-bottom: 25px; font-size: 1.1rem;">Confiez-nous votre site web ou votre application, on s'occupe du reste</p>
+<a class="btn-accent" href="{% url 'confiez_nous_projet' %}">Confiez-nous votre projet</a>
+</div>
+</section>
+<!-- ===== PIED DE PAGE ===== -->
+
+<!-- ===== CHATBOT FAQ ===== -->
+{% endblock %}

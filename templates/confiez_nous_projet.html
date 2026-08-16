@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Confiez-nous votre projet - INNOV-DIGIT{% endblock %}
+
+{% block content %}
+<!-- ===== MENU DE NAVIGATION ===== -->
+
+<!-- ===== BANNIÈRE ===== -->
+<section class="hero-section hero-petit">
+<div class="container">
+<h1>Confiez-nous votre projet</h1>
+<p>Parlez-nous de votre entreprise, on s'occupe de la digitaliser</p>
+</div>
+</section>
+<!-- ===== FORMULAIRE ===== -->
+<section class="section-padding section-fond-clair">
+<div class="container">
+<div class="message-confirmation {% if message_envoye %}visible{% endif %}" id="message-confirmation">
+<i class="bi bi-check-circle-fill me-2"></i>
+                Merci ! Votre demande a bien été enregistrée. Nous vous recontacterons rapidement.
+            </div>
+<form class="formulaire-projet" id="formulaire-projet" method="post">
+{% csrf_token %}
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.nom_entreprise.id_for_label }}">Nom de l'entreprise *</label>
+{{ form.nom_entreprise }}
+{{ form.nom_entreprise.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.nom_contact.id_for_label }}">Nom du responsable *</label>
+{{ form.nom_contact }}
+{{ form.nom_contact.errors }}
+</div>
+</div>
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.email.id_for_label }}">Email *</label>
+{{ form.email }}
+{{ form.email.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.telephone.id_for_label }}">Téléphone *</label>
+{{ form.telephone }}
+{{ form.telephone.errors }}
+</div>
+</div>
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.type_projet.id_for_label }}">Type de projet *</label>
+{{ form.type_projet }}
+{{ form.type_projet.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.budget.id_for_label }}">Budget estimé (FCFA)</label>
+{{ form.budget }}
+</div>
+</div>
+<div class="groupe-champ">
+<label for="{{ form.delai.id_for_label }}">Délai souhaité</label>
+{{ form.delai }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.description.id_for_label }}">Décrivez votre projet *</label>
+{{ form.description }}
+{{ form.description.errors }}
+</div>
+<button class="btn-accent" style="width: 100%;" type="submit">Envoyer ma demande</button>
+</form>
+</div>
+</section>
+<!-- ===== PIED DE PAGE ===== -->
+
+<!-- ===== CHATBOT FAQ ===== -->
+{% endblock %}

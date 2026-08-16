@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}À propos - INNOV-DIGIT{% endblock %}
+
+{% block content %}
+<!-- ===== MENU DE NAVIGATION ===== -->
+
+<!-- ===== BANNIÈRE ===== -->
+<section class="hero-section hero-petit">
+<div class="container">
+<h1>À propos d'INNOV-DIGIT</h1>
+<p>Une entreprise nigérienne au service de la transformation numérique</p>
+</div>
+</section>
+<!-- ===== NOTRE HISTOIRE ===== -->
+<section class="section-padding">
+<div class="container">
+<div class="grille-services" style="grid-template-columns: 1fr 1fr; align-items: center;">
+<div class="au-scroll">
+<h2 style="color: var(--couleur-principale); margin-bottom: 15px;">Notre histoire</h2>
+<p style="margin-bottom: 15px;">INNOV-DIGIT est née de la volonté de mettre la technologie au service des réalités locales du Niger. Convaincus que chaque entreprise, école ou organisation mérite des outils numériques adaptés à ses besoins réels, nous avons choisi de construire des solutions sur mesure plutôt que des produits standardisés.</p>
+<p>Depuis nos premiers projets — logiciels de gestion, applications mobiles, sites web pour des ONG et des entreprises locales — nous avons à cœur d'accompagner chaque client avec rigueur, écoute et proximité.</p>
+</div>
+<div class="au-scroll">
+<div class="carte-service" style="text-align: left;">
+<i class="bi bi-quote icone-service"></i>
+<p style="margin: 0; font-style: italic;">"Nous ne vendons pas des logiciels, nous construisons des solutions qui résolvent de vrais problèmes."</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== MISSION & VISION ===== -->
+<section class="section-padding section-fond-clair">
+<div class="container">
+<h2 class="titre-section au-scroll">Mission &amp; Vision</h2>
+<div class="grille-services">
+<div class="carte-service au-scroll">
+<i class="bi bi-bullseye icone-service"></i>
+<h4>Notre mission</h4>
+<p>Accompagner les entreprises, institutions et ONG du Niger dans leur transformation numérique, avec des solutions fiables, accessibles et adaptées au contexte local.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-eye icone-service"></i>
+<h4>Notre vision</h4>
+<p>Devenir un acteur de référence du développement logiciel et des services IT en Afrique de l'Ouest, en formant et en inspirant la prochaine génération de talents tech nigériens.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== NOS VALEURS ===== -->
+<section class="section-padding">
+<div class="container">
+<h2 class="titre-section au-scroll">Nos valeurs</h2>
+<div class="grille-services">
+<div class="carte-service au-scroll">
+<i class="bi bi-award icone-service"></i>
+<h4>Excellence</h4>
+<p>Un travail soigné, testé et documenté, à chaque étape du projet.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-geo-alt icone-service"></i>
+<h4>Proximité</h4>
+<p>Une écoute attentive des besoins réels de chaque client, sans jargon inutile.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-shield-check icone-service"></i>
+<h4>Intégrité</h4>
+<p>Transparence sur les délais, les coûts et les limites techniques de chaque projet.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-lightbulb icone-service"></i>
+<h4>Innovation</h4>
+<p>Une veille constante pour proposer des solutions modernes et pertinentes.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== PARTENAIRES & FOURNISSEURS ===== -->
+<section class="section-partenaires">
+<div class="container">
+<h2 class="titre-section au-scroll">Nos partenaires &amp; fournisseurs</h2>
+<div class="slider-partenaires-conteneur">
+<div class="slider-partenaires-piste">
+<img alt="Partenaire 1" src="{% static 'img/partenaires/partenaire-1.png' %}"/>
+<img alt="Partenaire 2" src="{% static 'img/partenaires/partenaire-2.png' %}"/>
+<img alt="Partenaire 3" src="{% static 'img/partenaires/partenaire-3.png' %}"/>
+<img alt="Partenaire 4" src="{% static 'img/partenaires/partenaire-4.png' %}"/>
+<img alt="Partenaire 5" src="{% static 'img/partenaires/partenaire-5.png' %}"/>
+<img alt="Partenaire 6" src="{% static 'img/partenaires/partenaire-6.png' %}"/>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== APPEL À L'ACTION ===== -->
+<section class="section-padding cta-section" style="background-color: var(--couleur-fond-clair);">
+<div class="container au-scroll">
+<h2 class="titre-section">Envie de collaborer avec nous ?</h2>
+<p style="margin-bottom: 25px; font-size: 1.1rem;">Parlons de votre projet dès aujourd'hui</p>
+<a class="btn-accent" href="{% url 'confiez_nous_projet' %}">Confiez-nous votre projet</a>
+</div>
+</section>
+<!-- ===== PIED DE PAGE ===== -->
+
+<!-- ===== CHATBOT FAQ ===== -->
+{% endblock %}

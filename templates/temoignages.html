@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Témoignages - INNOV-DIGIT{% endblock %}
+
+{% block content %}
+<!-- ===== MENU DE NAVIGATION ===== -->
+
+<!-- ===== BANNIÈRE ===== -->
+<section class="hero-section hero-petit">
+<div class="container">
+<h1>Ils nous font confiance</h1>
+<p>Témoignages et attestations de nos clients et partenaires</p>
+</div>
+</section>
+<!-- ===== TÉMOIGNAGES ===== -->
+<section class="section-padding">
+<div class="container">
+<div class="grille-temoignages">
+<div class="carte-temoignage au-scroll">
+<div class="etoiles-temoignage">★★★★★</div>
+<i class="bi bi-quote icone-guillemet"></i>
+<p class="texte-temoignage">L'équipe d'INNOV-DIGIT a su comprendre nos besoins et livrer une solution adaptée à notre réalité de terrain. Un vrai partenaire technique.</p>
+<div class="auteur-temoignage">
+<div class="avatar-temoignage">O</div>
+<div>
+<div class="nom-auteur">ONG OEDAS</div>
+<div class="role-auteur">Client - Site web</div>
+</div>
+</div>
+</div>
+<div class="carte-temoignage au-scroll">
+<div class="etoiles-temoignage">★★★★★</div>
+<i class="bi bi-quote icone-guillemet"></i>
+<p class="texte-temoignage">Réactivité, professionnalisme et écoute : notre parc informatique est désormais bien mieux géré grâce à leur suivi régulier.</p>
+<div class="auteur-temoignage">
+<div class="avatar-temoignage">I</div>
+<div>
+<div class="nom-auteur">IBRA Service</div>
+<div class="role-auteur">Client - Maintenance IT</div>
+</div>
+</div>
+</div>
+<div class="carte-temoignage au-scroll">
+<div class="etoiles-temoignage">★★★★★</div>
+<i class="bi bi-quote icone-guillemet"></i>
+<p class="texte-temoignage">Le logiciel de gestion scolaire a vraiment simplifié notre communication avec les parents grâce aux notifications SMS automatiques.</p>
+<div class="auteur-temoignage">
+<div class="avatar-temoignage">S</div>
+<div>
+<div class="nom-auteur">Établissement scolaire</div>
+<div class="role-auteur">Client - School Management Software</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== ATTESTATIONS / DOCUMENTS ===== -->
+<section class="section-padding section-fond-clair">
+<div class="container">
+<h2 class="titre-section au-scroll">Attestations de travail</h2>
+<div class="grille-temoignages">
+{% for attestation in attestations %}
+<div class="carte-temoignage au-scroll">
+<h4 style="color: var(--couleur-principale); margin-bottom: 5px;">{{ attestation.client_nom }}</h4>
+<p style="font-size: 0.85rem; color: #888; margin-bottom: 5px;">{{ attestation.description }}</p>
+<div class="bloc-attestation">
+<img alt="Attestation {{ attestation.client_nom }}" src="{{ attestation.image.url }}"/>
+</div>
+</div>
+{% empty %}
+<p style="text-align:center; color:#888;">Aucune attestation à afficher pour le moment.</p>
+{% endfor %}
+</div>
+</div>
+</section>
+<!-- ===== APPEL À L'ACTION ===== -->
+<section class="section-padding cta-section">
+<div class="container au-scroll">
+<h2 class="titre-section">Vous aussi, devenez un client satisfait</h2>
+<p style="margin-bottom: 25px; font-size: 1.1rem;">Parlons de votre projet dès aujourd'hui</p>
+<a class="btn-accent" href="{% url 'confiez_nous_projet' %}">Confiez-nous votre projet</a>
+</div>
+</section>
+<!-- ===== PIED DE PAGE ===== -->
+
+<!-- ===== CHATBOT FAQ ===== -->
+{% endblock %}

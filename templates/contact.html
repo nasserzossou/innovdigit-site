@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Contact - INNOV-DIGIT{% endblock %}
+
+{% block content %}
+<!-- ===== MENU DE NAVIGATION ===== -->
+
+<!-- ===== BANNIÈRE ===== -->
+<section class="hero-section hero-petit">
+<div class="container">
+<h1>Contactez-nous</h1>
+<p>Une question ? Un projet ? Nous sommes à votre écoute</p>
+</div>
+</section>
+<!-- ===== CONTACT : FORMULAIRE + COORDONNÉES ===== -->
+<section class="section-padding section-fond-clair">
+<div class="container">
+<div class="grille-services" style="grid-template-columns: 1.3fr 1fr; align-items: start; gap: 40px;">
+<!-- Formulaire de contact -->
+<div class="au-scroll">
+<div class="message-confirmation {% if message_envoye %}visible{% endif %}" id="message-confirmation-contact">
+<i class="bi bi-check-circle-fill me-2"></i>
+                        Merci pour votre message ! Nous vous répondrons dans les plus brefs délais.
+                    </div>
+<form class="formulaire-projet" id="formulaire-contact" method="post">
+{% csrf_token %}
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.nom.id_for_label }}">Nom complet *</label>
+{{ form.nom }}
+{{ form.nom.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.email.id_for_label }}">Email *</label>
+{{ form.email }}
+{{ form.email.errors }}
+</div>
+</div>
+<div class="groupe-champ">
+<label for="{{ form.telephone.id_for_label }}">Téléphone</label>
+{{ form.telephone }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.sujet.id_for_label }}">Sujet *</label>
+{{ form.sujet }}
+{{ form.sujet.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.message.id_for_label }}">Message *</label>
+{{ form.message }}
+{{ form.message.errors }}
+</div>
+<button class="btn-accent" style="width: 100%;" type="submit">Envoyer le message</button>
+</form>
+</div>
+<!-- Coordonnées -->
+<div class="au-scroll">
+<div class="carte-service" style="text-align: left; margin-bottom: 20px;">
+<i class="bi bi-geo-alt icone-service"></i>
+<h4>Adresse</h4>
+<p>Niamey, Niger</p>
+</div>
+<div class="carte-service" style="text-align: left; margin-bottom: 20px;">
+<i class="bi bi-envelope icone-service"></i>
+<h4>Email</h4>
+<p>innovdigitinfo@gmail.com</p>
+</div>
+<div class="carte-service" style="text-align: left; margin-bottom: 20px;">
+<i class="bi bi-telephone icone-service"></i>
+<h4>Téléphone</h4>
+<p>+227 97 42 02 07 / 80 36 56 50</p>
+</div>
+<div class="carte-service" style="text-align: left;">
+<i class="bi bi-whatsapp icone-service"></i>
+<h4>WhatsApp</h4>
+<p>Réponse rapide via WhatsApp</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== CARTE (localisation) ===== -->
+<section class="section-padding">
+<div class="container au-scroll">
+<h2 class="titre-section">Nous trouver</h2>
+<div style="border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+<iframe allowfullscreen="" height="400" loading="lazy" src="https://www.google.com/maps?q=Niamey,Niger&amp;output=embed" style="border:0;" width="100%">
+</iframe>
+</div>
+</div>
+</section>
+<!-- ===== PIED DE PAGE ===== -->
+
+<!-- ===== CHATBOT FAQ ===== -->
+{% endblock %}

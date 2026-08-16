@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Annonces - INNOV-DIGIT{% endblock %}
+
+{% block content %}
+<!-- ===== MENU DE NAVIGATION ===== -->
+
+<!-- ===== BANNIÈRE ===== -->
+<section class="hero-section hero-petit">
+<div class="container">
+<h1>Annonces</h1>
+<p>Recrutements en cours et projets en développement</p>
+</div>
+</section>
+<!-- ===== ONGLETS ===== -->
+<section class="section-padding">
+<div class="container">
+<div class="onglets-annonces">
+<button class="onglet-annonce actif" data-cible="onglet-recrutement">Recrutement</button>
+<button class="onglet-annonce" data-cible="onglet-projets">Projets en cours</button>
+</div>
+<!-- ===== RECRUTEMENT ===== -->
+<div class="contenu-onglet-annonce actif" id="onglet-recrutement">
+{% for offre in recrutements %}
+<div class="carte-annonce au-scroll">
+<div class="entete-annonce">
+<h3>{{ offre.titre }}</h3>
+<span class="statut-annonce {% if offre.statut == 'ouvert' %}statut-ouvert{% else %}statut-ferme{% endif %}">{{ offre.get_statut_display }}</span>
+</div>
+<div class="meta-annonce">
+<span><i class="bi bi-geo-alt"></i> {{ offre.lieu }}</span>
+<span><i class="bi bi-briefcase"></i> {{ offre.get_type_contrat_display }}</span>
+<span><i class="bi bi-calendar"></i> Publié le {{ offre.date_publication|date:"d/m/Y" }}</span>
+</div>
+<p>{{ offre.description }}</p>
+</div>
+{% empty %}
+<p style="text-align:center; color:#888;">Aucune offre d'emploi ouverte pour le moment.</p>
+{% endfor %}
+<p style="text-align: center; margin-top: 20px; color: #777;">
+                    Intéressé(e) ? Envoyez votre candidature à
+                    <a href="mailto:innovdigitinfo@gmail.com" style="color: var(--couleur-accent); font-weight: 600;">innovdigitinfo@gmail.com</a>
+</p>
+</div>
+<!-- ===== PROJETS EN COURS ===== -->
+<div class="contenu-onglet-annonce" id="onglet-projets">
+{% for projet in projets_en_cours %}
+<div class="carte-annonce au-scroll">
+<div class="entete-annonce">
+<h3>{{ projet.titre }}</h3>
+<span class="statut-annonce {% if projet.statut == 'en_cours' %}statut-encours{% else %}statut-ouvert{% endif %}">{{ projet.get_statut_display }}</span>
+</div>
+<div class="meta-annonce">
+<span><i class="bi bi-code-slash"></i> {{ projet.domaine }}</span>
+<span><i class="bi bi-clock"></i> Livraison estimée : {{ projet.livraison_estimee }}</span>
+</div>
+<p>{{ projet.description }}</p>
+</div>
+{% empty %}
+<p style="text-align:center; color:#888;">Aucun projet en cours à afficher pour le moment.</p>
+{% endfor %}
+</div>
+</div>
+</section>
+<!-- ===== APPEL À L'ACTION ===== -->
+<section class="section-padding cta-section section-fond-clair">
+<div class="container au-scroll">
+<h2 class="titre-section">Un projet à nous confier ou une candidature à envoyer ?</h2>
+<p style="margin-bottom: 25px; font-size: 1.1rem;">Écrivez-nous, on vous répond rapidement</p>
+<a class="btn-accent" href="{% url 'contact' %}">Nous contacter</a>
+</div>
+</section>
+<!-- ===== PIED DE PAGE ===== -->
+
+<!-- ===== CHATBOT FAQ ===== -->
+{% endblock %}

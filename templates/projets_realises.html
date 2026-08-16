@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Projets Réalisés - INNOV-DIGIT{% endblock %}
+
+{% block content %}
+
+    <!-- ===== BANNIÈRE ===== -->
+    <section class="hero-section hero-petit">
+        <div class="container">
+            <h1>Nos Réalisations</h1>
+            <p>Sites web, applications mobiles et projets menés pour nos clients</p>
+        </div>
+    </section>
+
+    <!-- ===== FILTRES + GALERIE UNIFIÉE ===== -->
+    <section class="section-padding">
+        <div class="container">
+
+            <div class="filtres-projets">
+                <button class="filtre-btn actif" data-categorie="tous">Tous</button>
+                {% for cle, libelle in categories %}
+                <button class="filtre-btn" data-categorie="{{ cle }}">{{ libelle }}</button>
+                {% endfor %}
+            </div>
+
+            <div class="grille-projets">
+                {% for projet in projets %}
+                <div class="carte-projet" data-categorie="{{ projet.categorie }}">
+                    <div class="image-projet">
+                        {% if projet.image %}
+                        <img src="{{ projet.image.url }}" alt="{{ projet.titre }}">
+                        {% else %}
+                        <img src="{% static 'img/placeholder-projet.jpg' %}" alt="{{ projet.titre }}">
+                        {% endif %}
+                        {% if projet.est_concept %}
+                        <span class="badge-concept">Concept</span>
+                        {% endif %}
+                    </div>
+                    <div class="contenu-carte-projet">
+                        <span class="etiquette-categorie">{{ projet.etiquette_affichee }}</span>
+                        <h4>{{ projet.titre }}</h4>
+                        <div class="detail-projet">
+                            <strong>Contexte :</strong>
+                            <p>{{ projet.contexte }}</p>
+                            <strong>Objectif atteint :</strong>
+                            <p>{{ projet.objectif_atteint }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>Aucun projet à afficher pour le moment.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== APPEL À L'ACTION ===== -->
+    <section class="section-padding cta-section section-fond-clair">
+        <div class="container au-scroll">
+            <h2 class="titre-section">Votre projet pourrait être le prochain</h2>
+            <p style="margin-bottom: 25px; font-size: 1.1rem;">Discutons de vos besoins et construisons ensemble une solution sur mesure</p>
+            <a href="{% url 'confiez_nous_projet' %}" class="btn-accent">Confiez-nous votre projet</a>
+        </div>
+    </section>
+
+{% endblock %}

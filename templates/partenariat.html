@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Partenariat - INNOV-DIGIT{% endblock %}
+
+{% block content %}
+<!-- ===== MENU DE NAVIGATION ===== -->
+
+<!-- ===== BANNIÈRE ===== -->
+<section class="hero-section hero-petit">
+<div class="container">
+<h1>Devenir Partenaire</h1>
+<p>Construisons ensemble des collaborations durables et bénéfiques</p>
+</div>
+</section>
+<!-- ===== POURQUOI DEVENIR PARTENAIRE ===== -->
+<section class="section-padding">
+<div class="container">
+<div class="grille-services" style="grid-template-columns: 1fr 1fr; align-items: center;">
+<div class="au-scroll">
+<h2 style="color: var(--couleur-principale); margin-bottom: 15px;">Pourquoi collaborer avec INNOV-DIGIT ?</h2>
+<p style="margin-bottom: 15px;">Que vous soyez une entreprise, un fournisseur de matériel, une ONG ou une institution, INNOV-DIGIT est ouverte à des partenariats durables autour du développement logiciel, des services IT, de la formation et de la fourniture de matériel.</p>
+<ul class="liste-avantages">
+<li><i class="bi bi-check2-circle"></i>Une expertise technique locale et fiable</li>
+<li><i class="bi bi-check2-circle"></i>Une flexibilité adaptée à chaque type de collaboration</li>
+<li><i class="bi bi-check2-circle"></i>Un réseau grandissant d'entreprises, ONG et institutions</li>
+</ul>
+</div>
+<div class="au-scroll">
+<div class="carte-service" style="text-align: left;">
+<i class="bi bi-handshake icone-service"></i>
+<p style="margin: 0;"><strong>Notre approche :</strong> des partenariats gagnant-gagnant, basés sur la confiance et la transparence.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== TYPES DE PARTENARIAT ===== -->
+<section class="section-padding section-fond-clair">
+<div class="container">
+<h2 class="titre-section au-scroll">Types de partenariat</h2>
+<div class="grille-services">
+<div class="carte-service au-scroll">
+<i class="bi bi-code-square icone-service"></i>
+<h4>Partenariat technique</h4>
+<p>Collaboration sur des projets de développement logiciel ou d'infrastructure IT partagés.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-box-seam icone-service"></i>
+<h4>Partenariat fournisseur</h4>
+<p>Approvisionnement en matériel informatique et électronique pour nos clients.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-people icone-service"></i>
+<h4>Partenariat institutionnel</h4>
+<p>Collaboration avec des ONG, écoles et institutions pour des projets à impact social.</p>
+</div>
+<div class="carte-service au-scroll">
+<i class="bi bi-graph-up-arrow icone-service"></i>
+<h4>Apporteur d'affaires</h4>
+<p>Vous nous recommandez des clients, nous construisons une relation de confiance durable.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ===== NOS PARTENAIRES ACTUELS ===== -->
+<section class="section-partenaires">
+<div class="container">
+<h2 class="titre-section au-scroll">Ils nous font déjà confiance</h2>
+<div class="slider-partenaires-conteneur">
+<div class="slider-partenaires-piste">
+{% for partenaire in partenaires %}
+<img alt="{{ partenaire.nom }}" src="{{ partenaire.logo.url }}"/>
+{% empty %}
+<p style="color:#888;">Aucun partenaire à afficher pour le moment.</p>
+{% endfor %}
+</div>
+</div>
+</div>
+</section>
+<!-- ===== FORMULAIRE DE PARTENARIAT ===== -->
+<section class="section-padding section-fond-clair">
+<div class="container">
+<h2 class="titre-section au-scroll">Proposer un partenariat</h2>
+<div class="message-confirmation {% if message_envoye %}visible{% endif %}" id="message-confirmation-partenariat">
+<i class="bi bi-check-circle-fill me-2"></i>
+                Merci ! Votre demande de partenariat a bien été enregistrée. Nous vous recontacterons pour confirmer le rendez-vous.
+            </div>
+<div class="encart-rendez-vous au-scroll">
+<i class="bi bi-info-circle-fill"></i>
+<p>Choisissez une date à laquelle vous souhaitez nous rencontrer. Nous vous confirmerons ce rendez-vous par email ou téléphone avant la date choisie.</p>
+</div>
+<form class="formulaire-projet au-scroll" id="formulaire-partenariat" method="post">
+{% csrf_token %}
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.entreprise.id_for_label }}">Nom de l'entreprise / organisation *</label>
+{{ form.entreprise }}
+{{ form.entreprise.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.contact.id_for_label }}">Nom du contact *</label>
+{{ form.contact }}
+{{ form.contact.errors }}
+</div>
+</div>
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.email.id_for_label }}">Email *</label>
+{{ form.email }}
+{{ form.email.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.telephone.id_for_label }}">Téléphone *</label>
+{{ form.telephone }}
+{{ form.telephone.errors }}
+</div>
+</div>
+<div class="groupe-champ">
+<label for="{{ form.type_partenariat.id_for_label }}">Type de partenariat souhaité *</label>
+{{ form.type_partenariat }}
+{{ form.type_partenariat.errors }}
+</div>
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.date_rdv.id_for_label }}">Date souhaitée pour le rendez-vous *</label>
+{{ form.date_rdv }}
+{{ form.date_rdv.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.heure_rdv.id_for_label }}">Heure préférée</label>
+{{ form.heure_rdv }}
+</div>
+</div>
+<div class="groupe-champ">
+<label for="{{ form.message.id_for_label }}">Décrivez votre proposition *</label>
+{{ form.message }}
+{{ form.message.errors }}
+</div>
+<button class="btn-accent" style="width: 100%;" type="submit">Envoyer ma demande de partenariat</button>
+</form>
+</div>
+</section>
+<!-- ===== PIED DE PAGE ===== -->
+
+<!-- ===== CHATBOT FAQ ===== -->
+{% endblock %}
