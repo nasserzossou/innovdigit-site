@@ -2,22 +2,22 @@ from django.contrib import admin, messages
 from django.urls import reverse
 from django.utils.html import format_html
 from .models import (
-    Projet, Attestation, Partenaire, Recrutement, ProjetEnCours,
+    Projet, Attestation, Partenaire, Recrutement, ProjetEnCours, Coordonnees,
     MessageContact, DemandePartenariat, DemandeProjet, Candidature, BadgePublic,
 )
 
 MESSAGE_GERE_ESOFT = (
-    "Géré depuis eSoft : les modifications faites ici seront écrasées "
+    "Géré depuis la plateforme interne : les modifications faites ici seront écrasées "
     "à la prochaine synchronisation."
 )
 
 
 class GereDepuisEsoftMixin:
-    """Affiche ref_esoft en lecture seule et prévient que l'élément est piloté par eSoft."""
+    """Affiche ref_esoft en lecture seule et prévient que l'élément est piloté par la plateforme interne."""
 
     @admin.display(description="Origine", ordering="ref_esoft")
     def origine(self, obj):
-        return f"eSoft ({obj.ref_esoft})" if obj.ref_esoft else "Saisi à la main"
+        return f"Plateforme ({obj.ref_esoft})" if obj.ref_esoft else "Saisi à la main"
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         obj = self.get_object(request, object_id)
@@ -29,7 +29,7 @@ class GereDepuisEsoftMixin:
         if request.method == "GET" and self.model.objects.filter(ref_esoft__isnull=False).exists():
             messages.info(
                 request,
-                "Éléments d'origine « eSoft » — " + MESSAGE_GERE_ESOFT,
+                "Éléments d'origine « plateforme » — " + MESSAGE_GERE_ESOFT,
             )
         return super().changelist_view(request, extra_context)
 
@@ -53,7 +53,7 @@ class ProjetAdmin(GereDepuisEsoftMixin, admin.ModelAdmin):
         ("Affichage", {
             "fields": ("actif", "ordre")
         }),
-        ("Synchronisation eSoft", {
+        ("Synchronisation avec la plateforme", {
             "fields": ("ref_esoft", "image_empreinte"),
             "classes": ("collapse",),
         }),
@@ -89,12 +89,29 @@ class RecrutementAdmin(GereDepuisEsoftMixin, admin.ModelAdmin):
 
 
 @admin.register(ProjetEnCours)
-class ProjetEnCoursAdmin(admin.ModelAdmin):
-    list_display = ("titre", "domaine", "statut", "livraison_estimee", "actif", "ordre")
+class ProjetEnCoursAdmin(GereDepuisEsoftMixin, admin.ModelAdmin):
+    list_display = ("titre", "domaine", "statut", "livraison_estimee", "actif", "ordre", "origine")
+    readonly_fields = ("ref_esoft",)
     list_filter = ("statut", "actif")
     list_editable = ("ordre", "actif")
     search_fields = ("titre", "description")
     ordering = ("ordre", "-date_creation")
+
+
+@admin.register(Coordonnees)
+class CoordonneesAdmin(admin.ModelAdmin):
+    """Publiées par la plateforme interne (page « Site web » → « Ce qui est publié ») : lecture seule ici."""
+    list_display = ("nom_entreprise", "email", "whatsapp", "recu_le")
+    readonly_fields = [f.name for f in Coordonnees._meta.fields if f.name != "id"]
+
+    def has_add_permission(self, request):
+        return False
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        if request.method == "GET":
+            messages.info(request, "Coordonnées gérées depuis la plateforme interne : modifiez-les dans la plateforme interne "
+                                   "(page « Site web » → « Ce qui est publié »).")
+        return super().change_view(request, object_id, form_url, extra_context)
 
 
 @admin.register(MessageContact)
@@ -147,7 +164,7 @@ class DemandeProjetAdmin(admin.ModelAdmin):
 @admin.register(Candidature)
 class CandidatureAdmin(admin.ModelAdmin):
     """Lecture seule : les candidatures arrivent par le bouton « Postuler » et sont
-    transmises à eSoft (le CV est alors supprimé du site)."""
+    transmises à la plateforme interne (le CV est alors supprimé du site)."""
     list_display = ("prenom", "nom", "recrutement", "email", "experience_ans", "recu_le", "transmis")
     list_filter = ("transmis", "recrutement")
     search_fields = ("nom", "prenom", "email", "diplome")
@@ -161,7 +178,7 @@ class CandidatureAdmin(admin.ModelAdmin):
     @admin.display(description="CV")
     def lien_cv(self, obj):
         if not obj.cv:
-            return "— (transmis à eSoft et supprimé du site)" if obj.transmis else "—"
+            return "— (transmis à la plateforme interne et supprimé du site)" if obj.transmis else "—"
         return format_html(
             '<a href="{}">Télécharger le CV</a>', reverse("cv_candidature", args=[obj.pk])
         )

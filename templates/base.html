@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}INNOV-DIGIT{% endblock %}</title>
+    <title>{% block title %}INNOV DIGIT{% endblock %}</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
     <nav class="navbar">
         <div class="conteneur-nav">
             <a href="{% url 'accueil' %}" class="logo">
-                <img src="{% static 'img/logo.png' %}" alt="INNOV-DIGIT">
+                <img src="{% static 'img/logo.png' %}" alt="Logo INNOV DIGIT">
                 <span>INNOV DIGIT</span>
             </a>
 
@@ -46,12 +46,12 @@
     <footer>
         <div class="conteneur-footer">
             <div>
-                <h4>INNOV-DIGIT</h4>
-                <p>Développement logiciel, services IT, IA, big data, hébergement, conception, communication et vente de matériel informatique.</p>
+                <h4>{{ coord.nom_affiche }}</h4>
+                <p>{{ coord.slogan_affiche }}</p>
                 <div class="reseaux-sociaux">
-                    <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
-                    <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    {% if coord.facebook %}<a href="{{ coord.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook"></i></a>{% endif %}
+                    {% if coord.linkedin %}<a href="{{ coord.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>{% endif %}
+                    {% if coord.lien_whatsapp %}<a href="{{ coord.lien_whatsapp }}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>{% endif %}
                 </div>
             </div>
 
@@ -70,15 +70,15 @@
 
             <div>
                 <h4>Contact</h4>
-                <p><i class="bi bi-geo-alt me-2"></i>Niamey, Niger</p>
-                <p><i class="bi bi-envelope me-2"></i>innovdigitinfo@gmail.com</p>
-                <p><i class="bi bi-telephone me-2"></i>+227 97 42 02 07</p>
-                <p><i class="bi bi-telephone me-2"></i>+227 80 36 56 50</p>
+                <p><i class="bi bi-geo-alt me-2"></i>{{ coord.adresse_affichee }}</p>
+                <p><i class="bi bi-envelope me-2"></i><a href="mailto:{{ coord.email_affiche }}" style="color: inherit;">{{ coord.email_affiche }}</a></p>
+                {% for tel in coord.telephones_affiches %}<p><i class="bi bi-telephone me-2"></i>{{ tel }}</p>
+                {% endfor %}{% if coord.horaires %}<p><i class="bi bi-clock me-2"></i>{{ coord.horaires }}</p>{% endif %}
             </div>
         </div>
 
         <div class="footer-bas">
-            &copy; 2026 INNOV-DIGIT. Tous droits réservés.
+            &copy; {% now "Y" %} {{ coord.nom_affiche }}. Tous droits réservés.
         </div>
     </footer>
 
@@ -87,15 +87,15 @@
         <i class="bi bi-chat-dots-fill"></i>
     </div>
 
-    <div id="chatbot-fenetre" class="chatbot-fenetre">
+    <div id="chatbot-fenetre" class="chatbot-fenetre" data-reponse-contact="Écrivez-nous à {{ coord.email_affiche }} ou appelez le {{ coord.telephones_affiches|join:' / ' }}{% if coord.lien_whatsapp %} (WhatsApp : {{ coord.whatsapp }}){% endif %}. Nous sommes basés à {{ coord.adresse_affichee }}.">
         <div class="chatbot-entete">
-            <h4><i class="bi bi-robot"></i> Assistant INNOV-DIGIT</h4>
+            <h4><i class="bi bi-robot"></i> Assistant INNOV DIGIT</h4>
             <button id="chatbot-fermer" class="chatbot-fermer">&times;</button>
         </div>
 
         <div id="chatbot-corps" class="chatbot-corps">
             <div class="message-bot">
-                Bonjour 👋 Je suis l'assistant INNOV-DIGIT. Choisissez une question ci-dessous :
+                Bonjour 👋 Je suis l'assistant INNOV DIGIT. Choisissez une question ci-dessous :
             </div>
         </div>
 

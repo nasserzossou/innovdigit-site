@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Contact - INNOV-DIGIT{% endblock %}
+{% block title %}Contact - INNOV DIGIT{% endblock %}
 
 {% block content %}
 <!-- ===== MENU DE NAVIGATION ===== -->
@@ -53,28 +53,33 @@
 <button class="btn-accent" style="width: 100%;" type="submit">Envoyer le message</button>
 </form>
 </div>
-<!-- Coordonnées -->
+<!-- Coordonnées (publiées depuis eSoft, repli sur les valeurs par défaut) -->
 <div class="au-scroll">
 <div class="carte-service" style="text-align: left; margin-bottom: 20px;">
 <i class="bi bi-geo-alt icone-service"></i>
 <h4>Adresse</h4>
-<p>Niamey, Niger</p>
+<p>{{ coord.adresse_affichee }}</p>
 </div>
 <div class="carte-service" style="text-align: left; margin-bottom: 20px;">
 <i class="bi bi-envelope icone-service"></i>
 <h4>Email</h4>
-<p>innovdigitinfo@gmail.com</p>
+<p><a href="mailto:{{ coord.email_affiche }}" style="color: inherit;">{{ coord.email_affiche }}</a></p>
 </div>
 <div class="carte-service" style="text-align: left; margin-bottom: 20px;">
 <i class="bi bi-telephone icone-service"></i>
 <h4>Téléphone</h4>
-<p>+227 97 42 02 07 / 80 36 56 50</p>
+<p>{% for tel in coord.telephones_affiches %}<a href="tel:{{ tel|cut:' ' }}" style="color: inherit;">{{ tel }}</a>{% if not forloop.last %} / {% endif %}{% endfor %}</p>
 </div>
-<div class="carte-service" style="text-align: left;">
+<div class="carte-service" style="text-align: left;{% if coord.horaires %} margin-bottom: 20px;{% endif %}">
 <i class="bi bi-whatsapp icone-service"></i>
 <h4>WhatsApp</h4>
-<p>Réponse rapide via WhatsApp</p>
+<p>{% if coord.lien_whatsapp %}<a href="{{ coord.lien_whatsapp }}" target="_blank" rel="noopener" style="color: inherit;">{{ coord.whatsapp }}</a> — réponse rapide via WhatsApp{% else %}Réponse rapide via WhatsApp{% endif %}</p>
 </div>
+{% if coord.horaires %}<div class="carte-service" style="text-align: left;">
+<i class="bi bi-clock icone-service"></i>
+<h4>Horaires</h4>
+<p>{{ coord.horaires }}</p>
+</div>{% endif %}
 </div>
 </div>
 </div>
@@ -84,7 +89,7 @@
 <div class="container au-scroll">
 <h2 class="titre-section">Nous trouver</h2>
 <div style="border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-<iframe allowfullscreen="" height="400" loading="lazy" src="https://www.google.com/maps?q=Niamey,Niger&amp;output=embed" style="border:0;" width="100%">
+<iframe allowfullscreen="" height="400" loading="lazy" src="https://www.google.com/maps?q={{ coord.adresse_affichee|urlencode }}&amp;output=embed" style="border:0;" width="100%">
 </iframe>
 </div>
 </div>

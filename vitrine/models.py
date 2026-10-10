@@ -1,4 +1,5 @@
 import os
+import re
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -16,7 +17,7 @@ def _champ_ref_esoft():
 
 
 class Projet(models.Model):
-    """Un projet réalisé par INNOV-DIGIT, affiché sur la page 'Projets Réalisés'."""
+    """Un projet réalisé par INNOV DIGIT, affiché sur la page 'Projets Réalisés'."""
 
     CATEGORIE_CHOIX = [
         ("vitrine", "Vitrine 5-10 Pages"),
@@ -41,7 +42,7 @@ class Projet(models.Model):
     )
     contexte = models.TextField("Contexte", help_text="Le besoin du client au départ.")
     objectif_atteint = models.TextField(
-        "Objectif atteint", help_text="Ce qu'INNOV-DIGIT a livré / résolu."
+        "Objectif atteint", help_text="Ce qu'INNOV DIGIT a livré / résolu."
     )
     image = models.ImageField(
         "Image du projet", upload_to="projets/", blank=True, null=True
@@ -184,6 +185,7 @@ class ProjetEnCours(models.Model):
     actif = models.BooleanField("Visible sur le site", default=True)
     ordre = models.PositiveIntegerField("Ordre d'affichage", default=0)
     date_creation = models.DateTimeField(auto_now_add=True)
+    ref_esoft = _champ_ref_esoft()
 
     class Meta:
         verbose_name = "Projet en cours"
@@ -192,6 +194,94 @@ class ProjetEnCours(models.Model):
 
     def __str__(self):
         return self.titre
+
+
+# --------------------------------------------------------------------------
+# Coordonnées de l'entreprise (pied de page, Contact, À propos)
+# --------------------------------------------------------------------------
+
+NOM_AFFICHE = "INNOV DIGIT"
+RE_NOM = re.compile(r"innov[\s._\-]*digit", re.IGNORECASE)
+
+# Valeurs affichées tant qu'eSoft n'a rien publié (ou pour un champ essentiel publié vide).
+COORDONNEES_REPLI = {
+    "nom_entreprise": NOM_AFFICHE,
+    "slogan": "Développement logiciel, services IT, IA, big data, hébergement, conception, "
+              "communication et vente de matériel informatique.",
+    "adresse": "Niamey, Niger",
+    "ville": "Niamey",
+    "telephones": ["+227 97 42 02 07", "+227 80 36 56 50"],
+    "email": "innovdigitinfo@gmail.com",
+}
+
+
+def nom_affiche(nom):
+    """« INNOV-DIGIT », « innov_digit », « INNOV.DIGIT »… → « INNOV DIGIT » (jamais de tiret ni de tiret bas)."""
+    return RE_NOM.sub(NOM_AFFICHE, (nom or "").strip()) or NOM_AFFICHE
+
+
+class Coordonnees(models.Model):
+    """Coordonnées publiées par eSoft (une seule ligne). Sans publication, les valeurs de repli s'affichent."""
+
+    nom_entreprise = models.CharField("Nom de l'entreprise", max_length=120, blank=True)
+    slogan = models.CharField("Slogan / présentation courte", max_length=250, blank=True)
+    adresse = models.CharField("Adresse", max_length=200, blank=True)
+    ville = models.CharField("Ville", max_length=80, blank=True)
+    telephones = models.JSONField("Téléphones", default=list, blank=True)
+    email = models.EmailField("E-mail", blank=True)
+    whatsapp = models.CharField("WhatsApp", max_length=30, blank=True)
+    horaires = models.CharField("Horaires", max_length=150, blank=True)
+    facebook = models.URLField("Page Facebook", blank=True)
+    linkedin = models.URLField("Page LinkedIn", blank=True)
+    site = models.URLField("Site web", blank=True)
+    recu_le = models.DateTimeField("Publié par eSoft le", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Coordonnées"
+        verbose_name_plural = "Coordonnées"
+
+    def __str__(self):
+        return f"Coordonnées de {self.nom_affiche}"
+
+    @classmethod
+    def actuelles(cls):
+        """Coordonnées à afficher : la ligne publiée, sinon un objet NON enregistré rempli avec le repli."""
+        return cls.objects.filter(pk=1).first() or cls(pk=1)
+
+    def _ou_repli(self, champ):
+        return getattr(self, champ) or COORDONNEES_REPLI[champ]
+
+    @property
+    def nom_affiche(self):
+        return nom_affiche(self.nom_entreprise)
+
+    @property
+    def slogan_affiche(self):
+        return self._ou_repli("slogan")
+
+    @property
+    def adresse_affichee(self):
+        adresse = self._ou_repli("adresse")
+        if self.ville and self.ville.lower() not in adresse.lower():
+            adresse = f"{adresse}, {self.ville}"
+        return adresse
+
+    @property
+    def telephones_affiches(self):
+        return [t for t in (self.telephones or []) if t] or COORDONNEES_REPLI["telephones"]
+
+    @property
+    def email_affiche(self):
+        return self._ou_repli("email")
+
+    @property
+    def lien_whatsapp(self):
+        chiffres = re.sub(r"\D", "", self.whatsapp or "")
+        return f"https://wa.me/{chiffres}" if len(chiffres) >= 8 else ""
+
+    @property
+    def publiees(self):
+        return self.recu_le is not None
 
 
 class MessageContact(models.Model):

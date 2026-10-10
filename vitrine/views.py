@@ -84,6 +84,12 @@ class AProposView(PageBase):
     template_name = "a_propos.html"
     page_actif = "a_propos"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        # Partenaires publiés (eSoft ou admin) ; sans partenaire, les logos statiques restent affichés.
+        ctx["partenaires"] = Partenaire.objects.filter(actif=True).exclude(logo="")
+        return ctx
+
 
 class ContactView(FormView):
     template_name = "contact.html"

@@ -15,8 +15,8 @@ from django.utils import timezone
 from PIL import Image
 
 from .models import (
-    BadgePublic, Candidature, DemandePartenariat, DemandeProjet, MessageContact,
-    Partenaire, Projet, Recrutement,
+    BadgePublic, Candidature, Coordonnees, DemandePartenariat, DemandeProjet, MessageContact,
+    Partenaire, Projet, ProjetEnCours, Recrutement,
 )
 
 JETON = "jeton-de-test-" + "x" * 40
@@ -119,7 +119,8 @@ class PublicationTests(BaseTest):
         r = self.publier(charge_complete())
         self.assertEqual(r.status_code, 200, r.content)
         self.assertEqual(r.json(), {"ok": True, "partenaires": 2, "recrutements": 1,
-                                    "projets": 1, "badges": 1, "retires": 0})
+                                    "projets": 1, "projets_en_cours": 0, "badges": 1,
+                                    "coordonnees": False, "retires": 0})
         p = Partenaire.objects.get(ref_esoft="PAR-12")
         self.assertTrue(p.logo and os.path.exists(p.logo.path))
         nom_logo = p.logo.name
@@ -376,3 +377,122 @@ class VerifierBadgeTests(BaseTest):
         r = self.client.get("/verifier/ESB1.inconnu/")
         self.assertContains(r, "Badge inconnu")
         self.assertEqual(r["X-Robots-Tag"], "noindex, nofollow")
+
+
+# ---------------------------------------------------------------------------
+# Contrat version 2 : projets en développement et coordonnées
+# ---------------------------------------------------------------------------
+
+def charge_v2():
+    donnees = charge_complete()
+    donnees["version"] = 2
+    donnees["projets_en_cours"] = [
+        {"ref": "PRJ-2026-004", "titre": "Plateforme de gestion scolaire", "domaine": "Développement web",
+         "livraison_estimee": "Décembre 2026", "statut": "en_cours",
+         "description": "Inscriptions, notes et bulletins.", "ordre": 10},
+        {"ref": "PRJ-2026-007", "titre": "Application de livraison", "domaine": "Application mobile",
+         "livraison_estimee": "", "statut": "termine", "description": "Suivi des courses.", "ordre": 20},
+    ]
+    donnees["coordonnees"] = {
+        "nom_entreprise": "INNOV-DIGIT", "slogan": "Solutions numériques et maintenance informatique",
+        "adresse": "Quartier Plateau, rue PL-34", "ville": "Niamey",
+        "telephones": ["+227 90 11 22 33", "+227 80 44 55 66"], "email": "contact@innovdigit.example",
+        "whatsapp": "+227 90 11 22 33", "horaires": "Lun-Ven 8h-17h30, Sam 9h-13h",
+        "facebook": "https://facebook.com/innovdigit", "linkedin": "javascript:alert(1)", "site": "",
+    }
+    return donnees
+
+
+class ContratV2Tests(BaseTest):
+    def test_projets_en_cours_et_coordonnees_publies_puis_idempotence(self):
+        r = self.publier(charge_v2())
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.json()["projets_en_cours"], 2)
+        self.assertTrue(r.json()["coordonnees"])
+        p = ProjetEnCours.objects.get(ref_esoft="PRJ-2026-004")
+        self.assertTrue(p.actif)
+        self.assertEqual((p.domaine, p.livraison_estimee, p.statut, p.ordre),
+                         ("Développement web", "Décembre 2026", "en_cours", 10))
+        self.assertEqual(ProjetEnCours.objects.get(ref_esoft="PRJ-2026-007").livraison_estimee, "à confirmer")
+        c = Coordonnees.objects.get(pk=1)
+        self.assertEqual(c.telephones, ["+227 90 11 22 33", "+227 80 44 55 66"])
+        self.assertEqual(c.linkedin, "")  # adresse non http(s) refusée
+        self.assertEqual(c.nom_affiche, "INNOV DIGIT")
+
+        r2 = self.publier(charge_v2())
+        self.assertEqual(r2.status_code, 200)
+        self.assertEqual(r2.json()["retires"], 0)
+        self.assertEqual(ProjetEnCours.objects.count(), 2)
+        self.assertEqual(Coordonnees.objects.count(), 1)
+
+    def test_retrait_projet_en_cours_et_manuel_non_touche(self):
+        manuel = ProjetEnCours.objects.create(titre="Saisi à la main", domaine="IA", description="x")
+        self.publier(charge_v2())
+        donnees = charge_v2()
+        donnees["projets_en_cours"] = donnees["projets_en_cours"][:1]
+        r = self.publier(donnees)
+        self.assertEqual(r.json()["retires"], 1)
+        self.assertFalse(ProjetEnCours.objects.get(ref_esoft="PRJ-2026-007").actif)
+        manuel.refresh_from_db()
+        self.assertTrue(manuel.actif)
+        annonces = self.client.get(reverse("annonces")).content.decode()
+        self.assertIn("Plateforme de gestion scolaire", annonces)
+        self.assertNotIn("Application de livraison", annonces)
+        self.assertIn("Saisi à la main", annonces)
+
+    def test_cles_absentes_rien_touche(self):
+        self.publier(charge_v2())
+        r = self.publier({"version": 2, "partenaires": []})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(ProjetEnCours.objects.filter(actif=True).count(), 2)
+        self.assertEqual(Coordonnees.objects.get(pk=1).email, "contact@innovdigit.example")
+
+    def test_version_1_toujours_acceptee_et_version_inconnue_refusee(self):
+        self.assertEqual(self.publier({"version": 1, "projets": []}).status_code, 200)
+        self.assertEqual(self.publier({"version": 3}).status_code, 400)
+
+    def test_coordonnees_invalides_400_rien_ecrit(self):
+        donnees = charge_v2()
+        donnees["coordonnees"]["telephones"] = {"a": 1}
+        self.assertEqual(self.publier(donnees).status_code, 400)
+        self.assertFalse(Coordonnees.objects.exists())
+        self.assertFalse(ProjetEnCours.objects.exists())
+
+    def test_pages_affichent_les_coordonnees_publiees(self):
+        self.publier(charge_v2())
+        for nom in ("contact", "a_propos", "accueil"):
+            html = self.client.get(reverse(nom)).content.decode()
+            self.assertIn("+227 90 11 22 33", html, nom)
+            self.assertIn("contact@innovdigit.example", html, nom)
+            self.assertNotIn("innovdigitinfo@gmail.com", html, nom)
+        contact = self.client.get(reverse("contact")).content.decode()
+        self.assertIn("Quartier Plateau, rue PL-34, Niamey", contact)
+        self.assertIn("Lun-Ven 8h-17h30", contact)
+        self.assertIn("https://wa.me/22790112233", contact)
+
+    def test_repli_sans_coordonnees_publiees(self):
+        self.assertFalse(Coordonnees.objects.exists())
+        for nom in ("contact", "a_propos", "accueil", "annonces"):
+            html = self.client.get(reverse(nom)).content.decode()
+            self.assertIn("innovdigitinfo@gmail.com", html, nom)
+            self.assertIn("+227 97 42 02 07", html, nom)
+            self.assertIn("Niamey, Niger", html, nom)
+        self.assertFalse(Coordonnees.objects.exists())  # l'affichage ne crée pas de ligne
+
+    def test_champ_essentiel_vide_repli(self):
+        donnees = charge_v2()
+        donnees["coordonnees"].update({"email": "pas-un-email", "telephones": [], "adresse": ""})
+        self.publier(donnees)
+        html = self.client.get(reverse("contact")).content.decode()
+        self.assertIn("innovdigitinfo@gmail.com", html)
+        self.assertIn("+227 97 42 02 07", html)
+
+
+class NomAfficheTests(BaseTest):
+    def test_nom_sans_tiret_sur_toutes_les_pages(self):
+        for nom in ("accueil", "services", "projets_realises", "temoignages", "partenariat", "annonces",
+                    "a_propos", "contact", "confiez_nous_projet"):
+            html = self.client.get(reverse(nom)).content.decode()
+            self.assertIn("INNOV DIGIT", html, nom)
+            self.assertNotIn("INNOV-DIGIT", html, nom)
+            self.assertNotIn("INNOV_DIGIT", html, nom)

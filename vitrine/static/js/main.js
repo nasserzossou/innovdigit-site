@@ -1,5 +1,5 @@
 /* ==========================================================================
-   INNOV-DIGIT - Script JavaScript principal
+   INNOV DIGIT - Script JavaScript principal
    Gère : menu mobile, animation au scroll, formulaires (projet, contact,
           partenariat), chatbot FAQ, filtres projets, images manquantes,
           slider partenaires, onglets annonces
@@ -84,6 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
             reponse: "Écrivez-nous à innovdigitinfo@gmail.com ou appelez le +227 97 42 02 07 / +227 80 36 56 50. Nous sommes basés à Niamey, Niger."
         }
     };
+
+    // Coordonnées publiées depuis eSoft (attribut posé par base.html) : prioritaires sur le texte ci-dessus.
+    if (fenetreChatbot && fenetreChatbot.dataset.reponseContact) {
+        questionsReponses.contact.reponse = fenetreChatbot.dataset.reponseContact;
+    }
 
     if (bulleChatbot && fenetreChatbot) {
 

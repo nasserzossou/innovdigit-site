@@ -3,7 +3,8 @@ API de synchronisation avec eSoft INNOV.DIGIT (plateforme interne).
 
 C'est TOUJOURS la plateforme qui appelle le site (le site n'appelle jamais la plateforme) :
 
-- POST api/esoft/publier/  : eSoft envoie tout l'état publié (partenaires, offres, réalisations, badges) ;
+- POST api/esoft/publier/  : eSoft envoie tout l'état publié (partenaires, offres, réalisations, badges,
+  et depuis la version 2 du contrat : projets en développement et coordonnées) ;
 - GET  api/esoft/demandes/ : eSoft récupère les demandes reçues sur le site et pas encore transmises ;
 - POST api/esoft/accuser/  : eSoft confirme la réception ; les CV transmis sont supprimés du site.
 
@@ -30,9 +31,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from PIL import Image
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+
 from .models import (
-    BadgePublic, Candidature, DemandePartenariat, DemandeProjet, MessageContact,
-    Partenaire, Projet, Recrutement,
+    BadgePublic, Candidature, Coordonnees, DemandePartenariat, DemandeProjet, MessageContact,
+    Partenaire, Projet, ProjetEnCours, Recrutement,
 )
 
 TAILLE_MAX_REQUETE = 25 * 1024 * 1024   # 25 Mo (contrat)
@@ -41,6 +45,8 @@ LONGUEUR_MIN_JETON = 32
 MAX_DEMANDES = 200
 FORMATS_IMAGE = {"PNG": "png", "JPEG": "jpg", "WEBP": "webp"}
 RE_EMPREINTE = re.compile(r"^[0-9a-f]{64}$")
+VERSIONS_ACCEPTEES = (1, 2)   # version 2 = version 1 + projets_en_cours + coordonnees (rétrocompatible)
+MAX_TELEPHONES = 5
 
 
 class ErreurFormat(Exception):
@@ -293,6 +299,57 @@ def _remplir_projet(objet, element):
     _appliquer_image(objet, "image", element.get("image"))
 
 
+def _remplir_projet_en_cours(objet, element):
+    objet.titre = _texte(element, "titre", 150, obligatoire=True)
+    objet.domaine = _texte(element, "domaine", 100) or "Développement"
+    objet.livraison_estimee = _texte(element, "livraison_estimee", 100) or "à confirmer"
+    objet.statut = _choix(element, "statut", ProjetEnCours.STATUT_CHOIX, "en_cours")
+    objet.description = _texte(element, "description")
+
+
+def _url(element, cle):
+    valeur = _texte(element, cle, 200)
+    return valeur if valeur.lower().startswith(("http://", "https://")) else ""
+
+
+def _appliquer_coordonnees(element):
+    """Met à jour la ligne unique Coordonnees. Champ vide → valeur de repli à l'affichage."""
+    if not isinstance(element, dict):
+        raise ErreurFormat("« coordonnees » doit être un objet.")
+    telephones = element.get("telephones") or []
+    if isinstance(telephones, str):
+        telephones = [telephones]
+    if not isinstance(telephones, list):
+        raise ErreurFormat("coordonnees : « telephones » doit être une liste.")
+    propres = []
+    for tel in telephones:
+        if not isinstance(tel, (str, int)) or isinstance(tel, bool):
+            raise ErreurFormat("coordonnees : téléphone texte attendu.")
+        tel = str(tel).strip()[:40]
+        if tel and tel not in propres:
+            propres.append(tel)
+    email = _texte(element, "email", 254)
+    try:
+        validate_email(email)
+    except ValidationError:
+        email = ""
+    coord = Coordonnees.objects.filter(pk=1).first() or Coordonnees(pk=1)
+    coord.nom_entreprise = _texte(element, "nom_entreprise", 120)
+    coord.slogan = _texte(element, "slogan", 250)
+    coord.adresse = _texte(element, "adresse", 200)
+    coord.ville = _texte(element, "ville", 80)
+    coord.telephones = propres[:MAX_TELEPHONES]
+    coord.email = email
+    coord.whatsapp = _texte(element, "whatsapp", 30)
+    coord.horaires = _texte(element, "horaires", 150)
+    coord.facebook = _url(element, "facebook")
+    coord.linkedin = _url(element, "linkedin")
+    coord.site = _url(element, "site")
+    coord.recu_le = timezone.now()
+    coord.save()
+    return True
+
+
 def _remplacer_badges(liste):
     badges, vues = [], set()
     statuts = {c[0] for c in BadgePublic.STATUT_CHOIX}
@@ -327,16 +384,19 @@ def publier(request):
     try:
         donnees = _lire_json(request)
         version = donnees.get("version", 1)
-        if version != 1:
+        if isinstance(version, bool) or version not in VERSIONS_ACCEPTEES:
             raise ErreurFormat(f"Version de contrat non prise en charge : {version}.")
-        reponse = {"ok": True, "partenaires": 0, "recrutements": 0, "projets": 0, "badges": 0, "retires": 0}
+        reponse = {"ok": True, "partenaires": 0, "recrutements": 0, "projets": 0,
+                   "projets_en_cours": 0, "badges": 0, "coordonnees": False, "retires": 0}
         categories = [
             ("partenaires", Partenaire, _remplir_partenaire),
             ("recrutements", Recrutement, _remplir_recrutement),
             ("projets", Projet, _remplir_projet),
+            ("projets_en_cours", ProjetEnCours, _remplir_projet_en_cours),
         ]
         listes = {cle: _liste(donnees, cle) for cle, _, _ in categories}
         badges = _liste(donnees, "badges")
+        coordonnees = donnees.get("coordonnees")  # clé absente (ou null) : coordonnées non touchées
         with transaction.atomic():
             for cle, modele, remplir in categories:
                 if listes[cle] is not None:
@@ -345,6 +405,8 @@ def publier(request):
                     reponse["retires"] += retires
             if badges is not None:
                 reponse["badges"] = _remplacer_badges(badges)
+            if coordonnees is not None:
+                reponse["coordonnees"] = _appliquer_coordonnees(coordonnees)
     except ErreurFormat as exc:
         return _erreur(str(exc))
     return JsonResponse(reponse)

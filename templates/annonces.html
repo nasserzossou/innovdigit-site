@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Annonces - INNOV-DIGIT{% endblock %}
+{% block title %}Annonces - INNOV DIGIT{% endblock %}
 
 {% block content %}
 <!-- ===== MENU DE NAVIGATION ===== -->
@@ -43,7 +43,7 @@
 {% endfor %}
 <p style="text-align: center; margin-top: 20px; color: #777;">
                     Intéressé(e) ? Envoyez votre candidature à
-                    <a href="mailto:innovdigitinfo@gmail.com" style="color: var(--couleur-accent); font-weight: 600;">innovdigitinfo@gmail.com</a>
+                    <a href="mailto:{{ coord.email_affiche }}" style="color: var(--couleur-accent); font-weight: 600;">{{ coord.email_affiche }}</a>
 </p>
 </div>
 <!-- ===== PROJETS EN COURS ===== -->
@@ -58,7 +58,7 @@
 <span><i class="bi bi-code-slash"></i> {{ projet.domaine }}</span>
 <span><i class="bi bi-clock"></i> Livraison estimée : {{ projet.livraison_estimee }}</span>
 </div>
-<p>{{ projet.description }}</p>
+<p>{{ projet.description|linebreaksbr }}</p>
 </div>
 {% empty %}
 <p style="text-align:center; color:#888;">Aucun projet en cours à afficher pour le moment.</p>

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}À propos - INNOV-DIGIT{% endblock %}
+{% block title %}À propos - INNOV DIGIT{% endblock %}
 
 {% block content %}
 <!-- ===== MENU DE NAVIGATION ===== -->
@@ -8,7 +8,7 @@
 <!-- ===== BANNIÈRE ===== -->
 <section class="hero-section hero-petit">
 <div class="container">
-<h1>À propos d'INNOV-DIGIT</h1>
+<h1>À propos d'{{ coord.nom_affiche }}</h1>
 <p>Une entreprise nigérienne au service de la transformation numérique</p>
 </div>
 </section>
@@ -18,7 +18,7 @@
 <div class="grille-services" style="grid-template-columns: 1fr 1fr; align-items: center;">
 <div class="au-scroll">
 <h2 style="color: var(--couleur-principale); margin-bottom: 15px;">Notre histoire</h2>
-<p style="margin-bottom: 15px;">INNOV-DIGIT est née de la volonté de mettre la technologie au service des réalités locales du Niger. Convaincus que chaque entreprise, école ou organisation mérite des outils numériques adaptés à ses besoins réels, nous avons choisi de construire des solutions sur mesure plutôt que des produits standardisés.</p>
+<p style="margin-bottom: 15px;">{{ coord.nom_affiche }} est née de la volonté de mettre la technologie au service des réalités locales du Niger. Convaincus que chaque entreprise, école ou organisation mérite des outils numériques adaptés à ses besoins réels, nous avons choisi de construire des solutions sur mesure plutôt que des produits standardisés.</p>
 <p>Depuis nos premiers projets — logiciels de gestion, applications mobiles, sites web pour des ONG et des entreprises locales — nous avons à cœur d'accompagner chaque client avec rigueur, écoute et proximité.</p>
 </div>
 <div class="au-scroll">
@@ -82,12 +82,13 @@
 <h2 class="titre-section au-scroll">Nos partenaires &amp; fournisseurs</h2>
 <div class="slider-partenaires-conteneur">
 <div class="slider-partenaires-piste">
-<img alt="Partenaire 1" src="{% static 'img/partenaires/partenaire-1.png' %}"/>
+{% if partenaires %}{% for partenaire in partenaires %}<img alt="{{ partenaire.nom }}" src="{{ partenaire.logo.url }}"/>
+{% endfor %}{% else %}<img alt="Partenaire 1" src="{% static 'img/partenaires/partenaire-1.png' %}"/>
 <img alt="Partenaire 2" src="{% static 'img/partenaires/partenaire-2.png' %}"/>
 <img alt="Partenaire 3" src="{% static 'img/partenaires/partenaire-3.png' %}"/>
 <img alt="Partenaire 4" src="{% static 'img/partenaires/partenaire-4.png' %}"/>
 <img alt="Partenaire 5" src="{% static 'img/partenaires/partenaire-5.png' %}"/>
-<img alt="Partenaire 6" src="{% static 'img/partenaires/partenaire-6.png' %}"/>
+<img alt="Partenaire 6" src="{% static 'img/partenaires/partenaire-6.png' %}"/>{% endif %}
 </div>
 </div>
 </div>
@@ -96,7 +97,8 @@
 <section class="section-padding cta-section" style="background-color: var(--couleur-fond-clair);">
 <div class="container au-scroll">
 <h2 class="titre-section">Envie de collaborer avec nous ?</h2>
-<p style="margin-bottom: 25px; font-size: 1.1rem;">Parlons de votre projet dès aujourd'hui</p>
+<p style="margin-bottom: 10px; font-size: 1.1rem;">Parlons de votre projet dès aujourd'hui</p>
+<p style="margin-bottom: 25px; color: #555;"><i class="bi bi-geo-alt"></i> {{ coord.adresse_affichee }} &nbsp;·&nbsp; <i class="bi bi-telephone"></i> {{ coord.telephones_affiches|join:" / " }} &nbsp;·&nbsp; <i class="bi bi-envelope"></i> {{ coord.email_affiche }}{% if coord.horaires %} &nbsp;·&nbsp; <i class="bi bi-clock"></i> {{ coord.horaires }}{% endif %}</p>
 <a class="btn-accent" href="{% url 'confiez_nous_projet' %}">Confiez-nous votre projet</a>
 </div>
 </section>

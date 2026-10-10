@@ -1,4 +1,4 @@
-# INNOV-DIGIT — Site vitrine (Django)
+# INNOV DIGIT — Site vitrine (Django)
 
 ## Lancer le site en local (Windows PowerShell)
 
@@ -97,19 +97,25 @@ Sans `ESOFT_SYNC_TOKEN` (ou avec un jeton de moins de 32 caractères), l'API ré
 
 | Adresse | Rôle |
 |---|---|
-| `POST /api/esoft/publier/` | eSoft envoie tout ce qui doit être publié (partenaires, offres, réalisations, badges) |
+| `POST /api/esoft/publier/` | eSoft envoie tout ce qui doit être publié (partenaires, offres, réalisations avec leur catégorie, projets en développement, coordonnées, badges) — contrat version 2, la version 1 reste acceptée |
 | `GET /api/esoft/demandes/` | eSoft récupère les messages, demandes et candidatures reçus sur le site |
 | `POST /api/esoft/accuser/` | eSoft confirme la réception ; les CV transmis sont alors **supprimés du site** |
 | `GET /verifier/<jeton>/` | Page publique ouverte par le QR code d'un badge du personnel (non indexée) |
 
 ### 3. Ce qui est géré depuis eSoft / ce qui reste à la main
 
-| Géré depuis eSoft (écrasé à chaque synchronisation) | Géré à la main dans `/admin/` |
+| Rubrique du site | Géré depuis eSoft (écrasé à chaque synchronisation) |
 |---|---|
-| **Partenaires** venant d'eSoft (logo compris) | Attestations |
-| **Offres de recrutement** venant d'eSoft (avec date limite) | Projets en cours |
-| **Projets réalisés** (réalisations) venant d'eSoft | Partenaires / offres / projets saisis à la main (sans « Référence eSoft ») |
-| **Badges publics** (table remplacée entièrement) | Suivi « Traité » des messages et demandes |
+| **Contactez-nous** (page Contact, pied de page, À propos, réponse « contact » de l'assistant) | **Coordonnées** : nom, slogan, adresse, ville, téléphones, e-mail, WhatsApp, horaires, Facebook, LinkedIn |
+| **Annonces → Recrutement** | **Offres de recrutement** (avec date limite et bouton « Postuler ») |
+| **Annonces → Projets en cours** | **Projets en développement** (projets eSoft cochés « Publier sur le site ») |
+| **Ils nous font déjà confiance** (Accueil, Partenariat, À propos) | **Partenaires** (logo compris) |
+| **Nos Réalisations** (Projets réalisés) | **Réalisations** avec leur **catégorie** (vitrine, e-commerce, one page, refonte, mobile, communication, autres) |
+| Vérification des badges | **Badges publics** (table remplacée entièrement) |
+
+Restent gérés à la main dans `/admin/` : les attestations, le suivi « Traité » des messages et demandes, et les éléments saisis à la main (sans « Référence eSoft ») — partenaires, offres, projets réalisés ou projets en cours.
+
+**Coordonnées** : tant qu'eSoft n'a rien publié, le site affiche les valeurs d'origine (Niamey, Niger · innovdigitinfo@gmail.com · +227 97 42 02 07 / +227 80 36 56 50). Un champ essentiel publié vide (adresse, e-mail, téléphones) retombe aussi sur ces valeurs. Le nom est toujours affiché « INNOV DIGIT » (un « INNOV-DIGIT » ou « INNOV_DIGIT » reçu est corrigé). Les coordonnées sont visibles en lecture seule dans l'admin (« Coordonnées »).
 
 - Un élément venant d'eSoft porte une **Référence eSoft** (colonne « Origine » dans l'admin) et affiche l'avertissement : *« Géré depuis eSoft : les modifications faites ici seront écrasées à la prochaine synchronisation »*. Modifiez-le dans eSoft, pas dans l'admin.
 - Un élément retiré dans eSoft est **masqué** sur le site (« Visible sur le site » décoché), pas supprimé.
