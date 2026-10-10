@@ -1,4 +1,18 @@
+import os
+
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
+
+
+# Champ commun : référence de l'élément dans eSoft INNOV.DIGIT (plateforme interne).
+# Vide (NULL) pour les éléments saisis à la main dans l'admin du site.
+def _champ_ref_esoft():
+    return models.CharField(
+        "Référence eSoft", max_length=40, unique=True, null=True, blank=True,
+        editable=False,
+        help_text="Renseignée automatiquement par la synchronisation eSoft.",
+    )
 
 
 class Projet(models.Model):
@@ -43,6 +57,10 @@ class Projet(models.Model):
         help_text="Les projets avec un chiffre plus petit apparaissent en premier."
     )
     date_creation = models.DateTimeField(auto_now_add=True)
+    ref_esoft = _champ_ref_esoft()
+    image_empreinte = models.CharField(
+        "Empreinte de l'image (SHA-256)", max_length=64, blank=True, editable=False
+    )
 
     class Meta:
         verbose_name = "Projet réalisé"
@@ -85,6 +103,10 @@ class Partenaire(models.Model):
     actif = models.BooleanField("Visible sur le site", default=True)
     ordre = models.PositiveIntegerField("Ordre d'affichage", default=0)
     date_creation = models.DateTimeField(auto_now_add=True)
+    ref_esoft = _champ_ref_esoft()
+    image_empreinte = models.CharField(
+        "Empreinte du logo (SHA-256)", max_length=64, blank=True, editable=False
+    )
 
     class Meta:
         verbose_name = "Partenaire"
@@ -117,8 +139,10 @@ class Recrutement(models.Model):
     statut = models.CharField("Statut", max_length=10, choices=STATUT_CHOIX, default="ouvert")
     description = models.TextField("Description du poste")
     date_publication = models.DateField("Date de publication", auto_now_add=True)
+    date_limite = models.DateField("Date limite de candidature", null=True, blank=True)
     actif = models.BooleanField("Visible sur le site", default=True)
     ordre = models.PositiveIntegerField("Ordre d'affichage", default=0)
+    ref_esoft = _champ_ref_esoft()
 
     class Meta:
         verbose_name = "Offre de recrutement"
@@ -127,6 +151,15 @@ class Recrutement(models.Model):
 
     def __str__(self):
         return self.titre
+
+    @property
+    def date_limite_depassee(self):
+        return bool(self.date_limite and self.date_limite < timezone.localdate())
+
+    @property
+    def accepte_candidatures(self):
+        """Vrai si l'offre est visible, ouverte et que la date limite n'est pas passée."""
+        return self.actif and self.statut == "ouvert" and not self.date_limite_depassee
 
 
 class ProjetEnCours(models.Model):
@@ -179,6 +212,8 @@ class MessageContact(models.Model):
     message = models.TextField("Message")
     date_envoi = models.DateTimeField("Reçu le", auto_now_add=True)
     traite = models.BooleanField("Traité", default=False)
+    transmis = models.BooleanField("Transmis à eSoft", default=False, editable=False)
+    transmis_le = models.DateTimeField("Transmis le", null=True, blank=True, editable=False)
 
     class Meta:
         verbose_name = "Message de contact"
@@ -215,6 +250,8 @@ class DemandePartenariat(models.Model):
     message = models.TextField("Proposition")
     date_envoi = models.DateTimeField("Reçu le", auto_now_add=True)
     traite = models.BooleanField("Traité", default=False)
+    transmis = models.BooleanField("Transmis à eSoft", default=False, editable=False)
+    transmis_le = models.DateTimeField("Transmis le", null=True, blank=True, editable=False)
 
     class Meta:
         verbose_name = "Demande de partenariat"
@@ -264,6 +301,8 @@ class DemandeProjet(models.Model):
     description = models.TextField("Description du projet")
     date_envoi = models.DateTimeField("Reçu le", auto_now_add=True)
     traite = models.BooleanField("Traité", default=False)
+    transmis = models.BooleanField("Transmis à eSoft", default=False, editable=False)
+    transmis_le = models.DateTimeField("Transmis le", null=True, blank=True, editable=False)
 
     class Meta:
         verbose_name = "Demande de projet"
@@ -272,3 +311,97 @@ class DemandeProjet(models.Model):
 
     def __str__(self):
         return f"{self.nom_entreprise} — {self.get_type_projet_display()} ({self.date_envoi:%d/%m/%Y})"
+
+
+# --------------------------------------------------------------------------
+# Candidatures (formulaire « Postuler ») et badges publics (vérification QR)
+# --------------------------------------------------------------------------
+
+CV_TAILLE_MAX = 5 * 1024 * 1024  # 5 Mo
+CV_SIGNATURES = {
+    ".pdf": (b"%PDF-",),
+    ".jpg": (b"\xff\xd8\xff",),
+    ".jpeg": (b"\xff\xd8\xff",),
+    ".png": (b"\x89PNG\r\n\x1a\n",),
+}
+
+
+def valider_cv(fichier):
+    """Vérifie l'extension, la taille et la signature réelle du fichier CV."""
+    extension = os.path.splitext(fichier.name or "")[1].lower()
+    if extension not in CV_SIGNATURES:
+        raise ValidationError("Format non accepté : envoyez un fichier PDF, JPG ou PNG.")
+    if fichier.size is not None and fichier.size > CV_TAILLE_MAX:
+        raise ValidationError("Le fichier est trop volumineux (5 Mo maximum).")
+    position = fichier.tell() if hasattr(fichier, "tell") else 0
+    try:
+        fichier.seek(0)
+        debut = fichier.read(16)
+    finally:
+        try:
+            fichier.seek(position)
+        except Exception:
+            pass
+    if not any(debut.startswith(sig) for sig in CV_SIGNATURES[extension]):
+        raise ValidationError(
+            "Le contenu du fichier ne correspond pas à son extension (PDF, JPG ou PNG attendu)."
+        )
+
+
+class Candidature(models.Model):
+    """Candidature envoyée via le bouton « Postuler » d'une offre de recrutement."""
+
+    recrutement = models.ForeignKey(
+        Recrutement, on_delete=models.PROTECT, related_name="candidatures",
+        verbose_name="Offre",
+    )
+    nom = models.CharField("Nom", max_length=100)
+    prenom = models.CharField("Prénom", max_length=100)
+    email = models.EmailField("E-mail")
+    telephone = models.CharField("Téléphone", max_length=30)
+    diplome = models.CharField("Diplôme le plus élevé", max_length=150)
+    experience_ans = models.PositiveSmallIntegerField("Années d'expérience", default=0)
+    message = models.TextField("Message / motivation", blank=True)
+    cv = models.FileField(
+        "CV", upload_to="candidatures/", blank=True, validators=[valider_cv],
+        help_text="PDF, JPG ou PNG — 5 Mo maximum.",
+    )
+    recu_le = models.DateTimeField("Reçue le", auto_now_add=True)
+    transmis = models.BooleanField("Transmise à eSoft", default=False, editable=False)
+    transmis_le = models.DateTimeField("Transmise le", null=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = "Candidature"
+        verbose_name_plural = "Candidatures"
+        ordering = ["-recu_le"]
+
+    def __str__(self):
+        return f"{self.prenom} {self.nom} — {self.recrutement} ({self.recu_le:%d/%m/%Y})"
+
+
+class BadgePublic(models.Model):
+    """Badge du personnel publié par eSoft, pour la page publique /verifier/.
+    Seule l'empreinte SHA-256 du jeton du badge est stockée (jamais le jeton)."""
+
+    STATUT_CHOIX = [
+        ("valide", "Valide"),
+        ("revoque", "Révoqué"),
+        ("inactif", "Inactif (ancien employé)"),
+    ]
+
+    empreinte = models.CharField("Empreinte (SHA-256)", max_length=64, unique=True)
+    prenom = models.CharField("Prénom", max_length=100)
+    nom = models.CharField("Nom", max_length=100)
+    poste = models.CharField("Poste", max_length=150, blank=True)
+    division = models.CharField("Division", max_length=150, blank=True)
+    matricule = models.CharField("Matricule", max_length=40, blank=True)
+    statut = models.CharField("Statut", max_length=10, choices=STATUT_CHOIX, default="valide")
+    recu_le = models.DateTimeField("Reçu le", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Badge public"
+        verbose_name_plural = "Badges publics"
+        ordering = ["nom", "prenom"]
+
+    def __str__(self):
+        return f"{self.prenom} {self.nom} ({self.get_statut_display()})"

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Vérification de badge - INNOV-DIGIT{% endblock %}
+
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+<style>
+.verif-carte { max-width: 520px; margin: 0 auto; background: #fff; border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 40px 30px; text-align: center; }
+.verif-carte .verif-logo { height: 56px; margin-bottom: 20px; }
+.verif-statut { display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 25px 15px; border-radius: 12px; margin-bottom: 25px; }
+.verif-statut i { font-size: 4rem; line-height: 1; }
+.verif-statut strong { font-size: 1.6rem; }
+.verif-valide { background-color: #e7f7ed; color: #1a7d3f; }
+.verif-non-valide { background-color: #fbe9e9; color: #b3261e; }
+.verif-inconnu { background-color: #eef0f3; color: #5f6670; }
+.verif-identite { text-align: left; margin: 0 auto 20px; border-collapse: collapse; width: 100%; }
+.verif-identite th, .verif-identite td { padding: 8px 6px; border-bottom: 1px solid #eef0f3; }
+.verif-identite th { color: #777; font-weight: 400; width: 40%; }
+.verif-identite td { color: var(--couleur-principale); font-weight: 600; }
+.verif-date { font-size: 0.85rem; color: #777; margin: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="section-padding section-fond-clair">
+<div class="container">
+<div class="verif-carte">
+<img class="verif-logo" src="{% static 'img/logo.png' %}" alt="INNOV-DIGIT">
+{% if etat == "valide" %}
+<div class="verif-statut verif-valide">
+<i class="bi bi-patch-check-fill"></i>
+<strong>Badge valide</strong>
+<span>Cette personne fait partie du personnel d'INNOV-DIGIT.</span>
+</div>
+<table class="verif-identite">
+<tr><th>Prénom</th><td>{{ badge.prenom }}</td></tr>
+<tr><th>Nom</th><td>{{ badge.nom|upper }}</td></tr>
+{% if badge.poste %}<tr><th>Poste</th><td>{{ badge.poste }}</td></tr>{% endif %}
+{% if badge.division %}<tr><th>Division</th><td>{{ badge.division }}</td></tr>{% endif %}
+{% if badge.matricule %}<tr><th>Matricule</th><td>{{ badge.matricule }}</td></tr>{% endif %}
+</table>
+{% elif etat == "non_valide" %}
+<div class="verif-statut verif-non-valide">
+<i class="bi bi-x-octagon-fill"></i>
+<strong>Badge non valide</strong>
+<span>Ce badge a été révoqué ou appartient à un ancien membre du personnel.</span>
+</div>
+{% else %}
+<div class="verif-statut verif-inconnu">
+<i class="bi bi-question-circle-fill"></i>
+<strong>Badge inconnu</strong>
+<span>Ce badge n'est pas reconnu par INNOV-DIGIT.</span>
+</div>
+{% endif %}
+<p class="verif-date">Vérifié le {{ verifie_le|date:"d/m/Y à H:i" }}</p>
+</div>
+</div>
+</section>
+{% endblock %}

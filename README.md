@@ -77,3 +77,51 @@ innovdigit/
 ## Prochaine étape : hébergement gratuit sur Render.com
 
 À faire dans un prochain échange une fois que tu as vérifié que tout marche bien en local.
+
+## Synchronisation avec eSoft INNOV.DIGIT
+
+La plateforme interne **eSoft INNOV.DIGIT** tourne sur le réseau local de l'entreprise : elle n'est pas joignable depuis Internet. C'est donc **toujours eSoft qui appelle le site** (toutes les 15 minutes), jamais l'inverse.
+
+### 1. Activer l'API sur Render
+
+1. Générer un jeton secret (au moins 32 caractères) :
+   ```powershell
+   python -c "import secrets;print(secrets.token_urlsafe(40))"
+   ```
+2. Sur Render → service du site → **Environment** → ajouter la variable `ESOFT_SYNC_TOKEN` avec ce jeton, puis redéployer.
+3. Dans eSoft (page **« Site web »**, compte Administrateur), saisir l'URL du site (`https://innovdigit-site.onrender.com`) et **le même jeton**.
+
+Sans `ESOFT_SYNC_TOKEN` (ou avec un jeton de moins de 32 caractères), l'API répond `503` : elle est désactivée. Un jeton faux reçoit `401`. Ne jamais publier ce jeton (ni dans Git, ni par message).
+
+### 2. Adresses utilisées par eSoft
+
+| Adresse | Rôle |
+|---|---|
+| `POST /api/esoft/publier/` | eSoft envoie tout ce qui doit être publié (partenaires, offres, réalisations, badges) |
+| `GET /api/esoft/demandes/` | eSoft récupère les messages, demandes et candidatures reçus sur le site |
+| `POST /api/esoft/accuser/` | eSoft confirme la réception ; les CV transmis sont alors **supprimés du site** |
+| `GET /verifier/<jeton>/` | Page publique ouverte par le QR code d'un badge du personnel (non indexée) |
+
+### 3. Ce qui est géré depuis eSoft / ce qui reste à la main
+
+| Géré depuis eSoft (écrasé à chaque synchronisation) | Géré à la main dans `/admin/` |
+|---|---|
+| **Partenaires** venant d'eSoft (logo compris) | Attestations |
+| **Offres de recrutement** venant d'eSoft (avec date limite) | Projets en cours |
+| **Projets réalisés** (réalisations) venant d'eSoft | Partenaires / offres / projets saisis à la main (sans « Référence eSoft ») |
+| **Badges publics** (table remplacée entièrement) | Suivi « Traité » des messages et demandes |
+
+- Un élément venant d'eSoft porte une **Référence eSoft** (colonne « Origine » dans l'admin) et affiche l'avertissement : *« Géré depuis eSoft : les modifications faites ici seront écrasées à la prochaine synchronisation »*. Modifiez-le dans eSoft, pas dans l'admin.
+- Un élément retiré dans eSoft est **masqué** sur le site (« Visible sur le site » décoché), pas supprimé.
+- Les éléments saisis à la main (sans référence eSoft) ne sont **jamais** modifiés par la synchronisation.
+- Les **candidatures** arrivent par le bouton « Postuler » de chaque offre ouverte (page Annonces). Elles sont visibles en lecture seule dans l'admin ; les CV ne sont pas accessibles publiquement (téléchargement réservé aux comptes admin) et sont effacés du site dès qu'eSoft les a récupérés.
+
+### 4. ⚠️ Limite importante : le disque de Render (offre gratuite) est éphémère
+
+Sur l'offre gratuite, Render **efface la base SQLite (`db.sqlite3`) et le dossier `media/`** à chaque redéploiement ou redémarrage du service :
+
+- le contenu publié par eSoft se **reconstruit tout seul** à la synchronisation suivante (eSoft renvoie tout à chaque fois) ;
+- en revanche, **un message, une demande ou une candidature reçus sur le site et pas encore récupérés par eSoft sont perdus** si Render redémarre entre-temps. eSoft les récupère toutes les 15 minutes, ce qui réduit ce risque sans le supprimer ;
+- les éléments saisis à la main dans l'admin et les images uploadées à la main sont aussi perdus à chaque redéploiement.
+
+**Recommandé** : ajouter un disque persistant Render (monté sur le dossier `media/`) et passer à une base **PostgreSQL** (Render Postgres) pour ne plus rien perdre.

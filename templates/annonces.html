@@ -31,8 +31,12 @@
 <span><i class="bi bi-geo-alt"></i> {{ offre.lieu }}</span>
 <span><i class="bi bi-briefcase"></i> {{ offre.get_type_contrat_display }}</span>
 <span><i class="bi bi-calendar"></i> Publié le {{ offre.date_publication|date:"d/m/Y" }}</span>
+{% if offre.date_limite %}<span><i class="bi bi-hourglass-split"></i> Date limite : {{ offre.date_limite|date:"d/m/Y" }}{% if offre.date_limite_depassee %} (dépassée){% endif %}</span>{% endif %}
 </div>
-<p>{{ offre.description }}</p>
+<p>{{ offre.description|linebreaksbr }}</p>
+{% if offre.accepte_candidatures %}
+<p style="margin-top: 18px; margin-bottom: 0;"><a class="btn-accent" href="{% url 'postuler' offre.pk %}"><i class="bi bi-send"></i> Postuler</a></p>
+{% endif %}
 </div>
 {% empty %}
 <p style="text-align:center; color:#888;">Aucune offre d'emploi ouverte pour le moment.</p>
