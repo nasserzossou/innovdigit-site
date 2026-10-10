@@ -30,7 +30,7 @@ DONNEES_PARTENAIRES = [
 DONNEES_RECRUTEMENTS = [
     dict(titre="Développeur(se) Web / Mobile", lieu="Niamey, Niger",
          type_contrat="temps_plein", statut="ouvert",
-         description="INNOV-DIGIT recherche un(e) développeur(se) motivé(e), à l'aise avec "
+         description="INNOV DIGIT recherche un(e) développeur(se) motivé(e), à l'aise avec "
                       "Django, React Native ou les technologies web modernes, pour rejoindre "
                       "l'équipe sur des projets clients variés.",
          ordre=10),

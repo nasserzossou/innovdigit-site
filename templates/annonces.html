@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Annonces - INNOV-DIGIT{% endblock %}
+{% block title %}Annonces - INNOV DIGIT{% endblock %}
 
 {% block content %}
 <!-- ===== MENU DE NAVIGATION ===== -->
@@ -31,15 +31,19 @@
 <span><i class="bi bi-geo-alt"></i> {{ offre.lieu }}</span>
 <span><i class="bi bi-briefcase"></i> {{ offre.get_type_contrat_display }}</span>
 <span><i class="bi bi-calendar"></i> Publié le {{ offre.date_publication|date:"d/m/Y" }}</span>
+{% if offre.date_limite %}<span><i class="bi bi-hourglass-split"></i> Date limite : {{ offre.date_limite|date:"d/m/Y" }}{% if offre.date_limite_depassee %} (dépassée){% endif %}</span>{% endif %}
 </div>
-<p>{{ offre.description }}</p>
+<p>{{ offre.description|linebreaksbr }}</p>
+{% if offre.accepte_candidatures %}
+<p style="margin-top: 18px; margin-bottom: 0;"><a class="btn-accent" href="{% url 'postuler' offre.pk %}"><i class="bi bi-send"></i> Postuler</a></p>
+{% endif %}
 </div>
 {% empty %}
 <p style="text-align:center; color:#888;">Aucune offre d'emploi ouverte pour le moment.</p>
 {% endfor %}
 <p style="text-align: center; margin-top: 20px; color: #777;">
                     Intéressé(e) ? Envoyez votre candidature à
-                    <a href="mailto:innovdigitinfo@gmail.com" style="color: var(--couleur-accent); font-weight: 600;">innovdigitinfo@gmail.com</a>
+                    <a href="mailto:{{ coord.email_affiche }}" style="color: var(--couleur-accent); font-weight: 600;">{{ coord.email_affiche }}</a>
 </p>
 </div>
 <!-- ===== PROJETS EN COURS ===== -->
@@ -54,7 +58,7 @@
 <span><i class="bi bi-code-slash"></i> {{ projet.domaine }}</span>
 <span><i class="bi bi-clock"></i> Livraison estimée : {{ projet.livraison_estimee }}</span>
 </div>
-<p>{{ projet.description }}</p>
+<p>{{ projet.description|linebreaksbr }}</p>
 </div>
 {% empty %}
 <p style="text-align:center; color:#888;">Aucun projet en cours à afficher pour le moment.</p>

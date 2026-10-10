@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Postuler : {{ offre.titre }} - INNOV DIGIT{% endblock %}
+
+{% block content %}
+<!-- ===== BANNIÈRE ===== -->
+<section class="hero-section hero-petit">
+<div class="container">
+<h1>Postuler</h1>
+<p>{{ offre.titre }} — {{ offre.lieu }}</p>
+</div>
+</section>
+<!-- ===== FORMULAIRE DE CANDIDATURE ===== -->
+<section class="section-padding section-fond-clair">
+<div class="container">
+<div class="carte-annonce" style="max-width: 800px; margin: 0 auto 30px;">
+<div class="entete-annonce">
+<h3>{{ offre.titre }}</h3>
+<span class="statut-annonce {% if offre.accepte_candidatures %}statut-ouvert{% else %}statut-ferme{% endif %}">{% if offre.accepte_candidatures %}{{ offre.get_statut_display }}{% else %}Candidatures closes{% endif %}</span>
+</div>
+<div class="meta-annonce">
+<span><i class="bi bi-geo-alt"></i> {{ offre.lieu }}</span>
+<span><i class="bi bi-briefcase"></i> {{ offre.get_type_contrat_display }}</span>
+{% if offre.date_limite %}<span><i class="bi bi-hourglass-split"></i> Date limite : {{ offre.date_limite|date:"d/m/Y" }}</span>{% endif %}
+</div>
+<p>{{ offre.description|linebreaksbr }}</p>
+</div>
+
+{% if message_envoye %}
+<div class="message-confirmation visible" style="max-width: 800px; margin: 0 auto 25px;">
+<i class="bi bi-check-circle-fill me-2"></i>
+Merci ! Votre candidature pour le poste « {{ offre.titre }} » a bien été envoyée.
+Nous l'étudierons avec attention et vous recontacterons si votre profil est retenu.
+</div>
+<p style="text-align: center;"><a class="btn-accent" href="{% url 'annonces' %}">Retour aux annonces</a></p>
+{% elif not offre.accepte_candidatures %}
+<div class="message-confirmation visible" style="max-width: 800px; margin: 0 auto 25px; background-color: #fbe9e9; color: #b3261e;">
+<i class="bi bi-x-circle-fill me-2"></i>
+{% if offre.date_limite_depassee %}La date limite de candidature pour cette offre est dépassée.{% else %}Cette offre n'accepte plus de candidatures.{% endif %}
+</div>
+<p style="text-align: center;"><a class="btn-accent" href="{% url 'annonces' %}">Voir les autres offres</a></p>
+{% else %}
+<form class="formulaire-projet au-scroll" id="formulaire-candidature" method="post" enctype="multipart/form-data">
+{% csrf_token %}
+{{ form.non_field_errors }}
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.nom.id_for_label }}">Nom *</label>
+{{ form.nom }}
+{{ form.nom.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.prenom.id_for_label }}">Prénom *</label>
+{{ form.prenom }}
+{{ form.prenom.errors }}
+</div>
+</div>
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.email.id_for_label }}">E-mail *</label>
+{{ form.email }}
+{{ form.email.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.telephone.id_for_label }}">Téléphone *</label>
+{{ form.telephone }}
+{{ form.telephone.errors }}
+</div>
+</div>
+<div class="ligne-double">
+<div class="groupe-champ">
+<label for="{{ form.diplome.id_for_label }}">Diplôme le plus élevé *</label>
+{{ form.diplome }}
+{{ form.diplome.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.experience_ans.id_for_label }}">Années d'expérience *</label>
+{{ form.experience_ans }}
+{{ form.experience_ans.errors }}
+</div>
+</div>
+<div class="groupe-champ">
+<label for="{{ form.message.id_for_label }}">Message / motivation</label>
+{{ form.message }}
+{{ form.message.errors }}
+</div>
+<div class="groupe-champ">
+<label for="{{ form.cv.id_for_label }}">CV * <small style="font-weight: 400; color: #777;">(PDF, JPG ou PNG — 5 Mo maximum)</small></label>
+{{ form.cv }}
+{{ form.cv.errors }}
+</div>
+<!-- Champ piège anti-robot : à laisser vide -->
+<div aria-hidden="true" style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;">
+<label for="{{ form.site_internet.id_for_label }}">Ne pas remplir ce champ</label>
+{{ form.site_internet }}
+</div>
+<p style="font-size: 0.85rem; color: #777; margin-bottom: 18px;">
+Vos informations servent uniquement au traitement de votre candidature par INNOV DIGIT.
+</p>
+<button class="btn-accent" style="width: 100%;" type="submit">Envoyer ma candidature</button>
+</form>
+{% endif %}
+</div>
+</section>
+{% endblock %}

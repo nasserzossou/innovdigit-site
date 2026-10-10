@@ -1,5 +1,5 @@
 /* ==========================================================================
-   INNOV-DIGIT - Script JavaScript principal
+   INNOV DIGIT - Script JavaScript principal
    Gère : menu mobile, animation au scroll, formulaires (projet, contact,
           partenariat), chatbot FAQ, filtres projets, images manquantes,
           slider partenaires, onglets annonces
@@ -46,56 +46,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- Formulaire "Confiez-nous votre projet" ---
-    const formulaireProjet = document.querySelector('#formulaire-projet');
-
-    if (formulaireProjet) {
-        formulaireProjet.addEventListener('submit', function (evenement) {
-            evenement.preventDefault();
-
-            const messageConfirmation = document.querySelector('#message-confirmation');
-            messageConfirmation.classList.add('visible');
-            formulaireProjet.reset();
-
-            messageConfirmation.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        });
-    }
-
-    // --- Formulaire de contact ---
-    const formulaireContact = document.querySelector('#formulaire-contact');
-
-    if (formulaireContact) {
-        formulaireContact.addEventListener('submit', function (evenement) {
-            evenement.preventDefault();
-
-            const messageConfirmationContact = document.querySelector('#message-confirmation-contact');
-            messageConfirmationContact.classList.add('visible');
-            formulaireContact.reset();
-
-            messageConfirmationContact.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        });
-    }
+    // --- Formulaires (Projet, Contact, Partenariat) ---
+    // Ils sont envoyés normalement au serveur Django, qui enregistre la demande puis affiche la confirmation
+    // (?envoye=1). L'ancien code bloquait l'envoi et affichait une fausse confirmation : rien n'était enregistré.
 
     // --- Formulaire de partenariat (avec réservation de rendez-vous) ---
-    const formulairePartenariat = document.querySelector('#formulaire-partenariat');
     const champDateRdv = document.querySelector('#date-rdv');
 
     // Empêche de choisir une date de rendez-vous dans le passé
     if (champDateRdv) {
         const aujourdHui = new Date().toISOString().split('T')[0];
         champDateRdv.setAttribute('min', aujourdHui);
-    }
-
-    if (formulairePartenariat) {
-        formulairePartenariat.addEventListener('submit', function (evenement) {
-            evenement.preventDefault();
-
-            const messageConfirmationPartenariat = document.querySelector('#message-confirmation-partenariat');
-            messageConfirmationPartenariat.classList.add('visible');
-            formulairePartenariat.reset();
-
-            messageConfirmationPartenariat.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        });
     }
 
     // --- Chatbot FAQ (statique, sans IA) ---
@@ -123,6 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
             reponse: "Écrivez-nous à innovdigitinfo@gmail.com ou appelez le +227 97 42 02 07 / +227 80 36 56 50. Nous sommes basés à Niamey, Niger."
         }
     };
+
+    // Coordonnées publiées depuis eSoft (attribut posé par base.html) : prioritaires sur le texte ci-dessus.
+    if (fenetreChatbot && fenetreChatbot.dataset.reponseContact) {
+        questionsReponses.contact.reponse = fenetreChatbot.dataset.reponseContact;
+    }
 
     if (bulleChatbot && fenetreChatbot) {
 
